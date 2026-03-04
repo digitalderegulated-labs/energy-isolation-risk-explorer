@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------
-# STYLE (makes it look more professional)
+# STYLE
 # ---------------------------------------------------
 
 st.markdown("""
@@ -24,13 +24,6 @@ st.markdown("""
 
 h1 {
     font-weight:700;
-}
-
-.metric-card {
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0px 2px 6px rgba(0,0,0,0.06);
 }
 
 </style>
@@ -47,7 +40,7 @@ page = st.sidebar.radio(
     [
         "Executive Overview",
         "Industry Risk Landscape",
-        "Geographic Distribution",
+        "Incident Locations",
         "Incident Trends",
         "Dataset Explorer"
     ]
@@ -66,9 +59,8 @@ def load_data():
     df.columns = df.columns.str.lower()
 
     # convert date
-    if "eventdate" in df.columns:
-        df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
-        df["year"] = df["eventdate"].dt.year
+    df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
+    df["year"] = df["eventdate"].dt.year
 
     return df
 
@@ -124,9 +116,9 @@ if page == "Executive Overview":
     st.markdown("""
 Electrical infrastructure environments such as power generation facilities, telecommunications networks, data centers, and commercial power systems rely on increasingly complex energy architectures.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity grows, verifying that all energy sources have been properly isolated becomes operationally challenging.
+During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying that all energy sources have been properly isolated becomes operationally challenging.
 
-This dashboard visualizes severe incident patterns across infrastructure sectors where electrical isolation complexity is highest.
+This dashboard highlights severe incident patterns across infrastructure sectors where electrical isolation complexity is highest.
 """)
 
     col1, col2, col3 = st.columns(3)
@@ -145,7 +137,8 @@ This dashboard visualizes severe incident patterns across infrastructure sectors
 
     st.info(
         f"Severe incidents are most frequently reported in **{highest_risk_sector}** environments, "
-        "highlighting the operational complexity involved in managing electrical systems and maintenance procedures across large infrastructure environments."
+        "highlighting the operational complexity involved in maintaining electrical infrastructure "
+        "across power systems, telecommunications networks, data centers, and commercial facilities."
     )
 
 # ---------------------------------------------------
@@ -169,35 +162,34 @@ if page == "Industry Risk Landscape":
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
-        showlegend=False,
-        xaxis_title="Infrastructure Environment",
-        yaxis_title="Incident Count"
+        showlegend=False
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------
-# GEOGRAPHIC DISTRIBUTION
+# INCIDENT LOCATION MAP
 # ---------------------------------------------------
 
-if page == "Geographic Distribution":
+if page == "Incident Locations":
 
-    st.title("Geographic Distribution of Severe Incidents")
+    st.title("Severe Incident Locations Across Infrastructure Environments")
 
-    state_counts = df.groupby("state").size().reset_index(name="Incidents")
+    geo_df = df.dropna(subset=["latitude", "longitude"])
 
-    fig = px.choropleth(
-        state_counts,
-        locations="state",
-        locationmode="USA-states",
-        color="Incidents",
-        scope="usa",
-        color_continuous_scale="Blues"
+    fig = px.scatter_mapbox(
+        geo_df,
+        lat="latitude",
+        lon="longitude",
+        hover_name="employer",
+        hover_data=["environment","city","state"],
+        zoom=3,
+        height=650
     )
 
     fig.update_layout(
-        plot_bgcolor="white",
-        paper_bgcolor="white"
+        mapbox_style="carto-positron",
+        margin={"r":0,"t":0,"l":0,"b":0}
     )
 
     st.plotly_chart(fig, use_container_width=True)
