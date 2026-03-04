@@ -7,19 +7,19 @@ import plotly.express as px
 # ---------------------------------------------------
 
 st.set_page_config(
-    page_title="Infrastructure Isolation Risk Dashboard",
+    page_title="Infrastructure Isolation Risk Intelligence",
     layout="wide"
 )
 
 # ---------------------------------------------------
-# STYLING
+# STYLE (makes it look more professional)
 # ---------------------------------------------------
 
 st.markdown("""
 <style>
 
 .main {
-    background-color:#f7f8fa;
+    background-color:#f6f7fb;
 }
 
 h1 {
@@ -30,7 +30,7 @@ h1 {
     background:white;
     padding:20px;
     border-radius:10px;
-    box-shadow:0px 3px 8px rgba(0,0,0,0.05);
+    box-shadow:0px 2px 6px rgba(0,0,0,0.06);
 }
 
 </style>
@@ -49,7 +49,7 @@ page = st.sidebar.radio(
         "Industry Risk Landscape",
         "Geographic Distribution",
         "Incident Trends",
-        "Dataset"
+        "Dataset Explorer"
     ]
 )
 
@@ -62,8 +62,10 @@ def load_data():
 
     df = pd.read_csv("osha_severe_injuries.csv", low_memory=False)
 
+    # normalize column names
     df.columns = df.columns.str.lower()
 
+    # convert date
     if "eventdate" in df.columns:
         df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
         df["year"] = df["eventdate"].dt.year
@@ -74,10 +76,10 @@ def load_data():
 df = load_data()
 
 # ---------------------------------------------------
-# NAICS FILTER
+# TARGET NAICS SECTORS
 # ---------------------------------------------------
 
-TARGET_NAICS = [
+target_naics = [
     "221121",
     "221122",
     "238210",
@@ -88,7 +90,7 @@ TARGET_NAICS = [
 
 df["primary naics"] = df["primary naics"].astype(str)
 
-df = df[df["primary naics"].isin(TARGET_NAICS)]
+df = df[df["primary naics"].isin(target_naics)]
 
 # ---------------------------------------------------
 # NAICS → ENVIRONMENT
@@ -96,25 +98,17 @@ df = df[df["primary naics"].isin(TARGET_NAICS)]
 
 def map_environment(code):
 
-    if code == "221121":
-        return "Electric Power Generation"
+    mapping = {
 
-    if code == "221122":
-        return "Electric Power Distribution"
+        "221121": "Electric Power Generation",
+        "221122": "Electric Power Distribution",
+        "238210": "Electrical Contractors",
+        "517311": "Telecommunications Infrastructure",
+        "518210": "Data Centers",
+        "236220": "Commercial Infrastructure Construction"
+    }
 
-    if code == "238210":
-        return "Electrical Contractors"
-
-    if code == "517311":
-        return "Telecommunications Infrastructure"
-
-    if code == "518210":
-        return "Data Centers"
-
-    if code == "236220":
-        return "Commercial Infrastructure Construction"
-
-    return "Other"
+    return mapping.get(code, "Other")
 
 
 df["environment"] = df["primary naics"].apply(map_environment)
@@ -128,23 +122,31 @@ if page == "Executive Overview":
     st.title("Operational Risk in Complex Electrical Infrastructure")
 
     st.markdown("""
-Electrical infrastructure environments such as power generation facilities, telecommunications networks, data centers, and large commercial power systems rely on complex energy architectures.
+Electrical infrastructure environments such as power generation facilities, telecommunications networks, data centers, and commercial power systems rely on increasingly complex energy architectures.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying that all energy sources have been properly isolated becomes more operationally challenging.
+During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity grows, verifying that all energy sources have been properly isolated becomes operationally challenging.
 
-This dashboard highlights patterns in severe electrical incidents across key infrastructure sectors in the United States.
+This dashboard visualizes severe incident patterns across infrastructure sectors where electrical isolation complexity is highest.
 """)
 
     col1, col2, col3 = st.columns(3)
 
-    with col1:
-        st.metric("Incident Records", len(df))
+    col1.metric("Incident Records", len(df))
+    col2.metric("Infrastructure Sectors", df["environment"].nunique())
+    col3.metric("States Represented", df["state"].nunique())
 
-    with col2:
-        st.metric("Infrastructure Environments", df["environment"].nunique())
+    st.divider()
 
-    with col3:
-        st.metric("States Represented", df["state"].nunique())
+    st.subheader("Executive Insight")
+
+    env_counts = df["environment"].value_counts()
+
+    highest_risk_sector = env_counts.idxmax()
+
+    st.info(
+        f"Severe incidents are most frequently reported in **{highest_risk_sector}** environments, "
+        "highlighting the operational complexity involved in managing electrical systems and maintenance procedures across large infrastructure environments."
+    )
 
 # ---------------------------------------------------
 # INDUSTRY RISK LANDSCAPE
@@ -167,7 +169,9 @@ if page == "Industry Risk Landscape":
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
-        showlegend=False
+        showlegend=False,
+        xaxis_title="Infrastructure Environment",
+        yaxis_title="Incident Count"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -206,31 +210,31 @@ if page == "Incident Trends":
 
     st.title("Incident Trends Over Time")
 
-    if "year" in df.columns:
+    trend = df.groupby("year").size().reset_index(name="Incidents")
 
-        trend = df.groupby("year").size().reset_index(name="Incidents")
+    fig = px.line(
+        trend,
+        x="year",
+        y="Incidents",
+        markers=True
+    )
 
-        fig = px.line(
-            trend,
-            x="year",
-            y="Incidents",
-            markers=True
-        )
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        xaxis_title="Year",
+        yaxis_title="Incident Count"
+    )
 
-        fig.update_layout(
-            plot_bgcolor="white",
-            paper_bgcolor="white"
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------
-# DATASET
+# DATASET EXPLORER
 # ---------------------------------------------------
 
-if page == "Dataset":
+if page == "Dataset Explorer":
 
-    st.title("Dataset Preview")
+    st.title("Dataset Explorer")
 
     st.write("Total Records:", len(df))
 
