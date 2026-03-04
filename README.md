@@ -1,40 +1,41 @@
-# Energy Infrastructure Risk Dashboard
+# Isolation Intelligence
 
-Executive visualization of severe incident patterns across complex electrical infrastructure environments.
+A prototype dashboard exploring operational risk in complex electrical infrastructure environments.
 
 ## Overview
 
-Modern electrical infrastructure environments — including power generation facilities, telecommunications networks, data centers, and commercial electrical systems — rely on complex and often redundant energy architectures.
+Modern infrastructure environments — including data centers, telecommunications networks, power systems, and commercial facilities — rely on layered electrical architectures that include redundant power feeds, backup generation, and distributed energy systems.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, so does the operational challenge of verifying that all energy sources have been properly isolated.
+During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying complete isolation becomes more difficult.
 
-This dashboard provides an executive-level view of severe incident patterns across critical infrastructure sectors in the United States.
+This dashboard explores how severe incident data can help visualize where operational complexity may contribute to safety risk.
 
-## Infrastructure Sectors Analyzed
+## Concept
 
-The analysis focuses on the following NAICS sectors:
+The purpose of this prototype is not to replicate internal safety analytics.
 
-- Electric Power Generation (221121)
-- Electric Power Distribution (221122)
-- Electrical Contractors (238210)
-- Telecommunications Infrastructure (517311)
-- Data Centers (518210)
-- Commercial Infrastructure Construction (236220)
+Instead, it demonstrates how publicly available incident data can be used to visualize:
 
-## Dashboard Features
+- infrastructure environments with complex electrical systems
+- geographic distribution of severe incidents
+- organizations operating in these environments
 
-- Executive overview of operational risk exposure
-- Incident distribution across infrastructure environments
-- Geographic distribution of incidents across U.S. states
-- Incident trend analysis over time
-- Dataset transparency and inspection
+The concept illustrates how operational complexity can translate into isolation risk during maintenance operations.
+
+## Infrastructure Sectors Included
+
+The analysis focuses on sectors commonly associated with complex electrical infrastructure:
+
+- Electric Power Generation
+- Electric Power Distribution
+- Electrical Contractors
+- Telecommunications Infrastructure
+- Data Centers
+- Commercial Infrastructure Construction
 
 ## Data Source
 
-U.S. Department of Labor  
 OSHA Severe Injury Reports
-
-https://www.osha.gov/severeinjury
 
 ## Technology
 
@@ -42,3 +43,7 @@ https://www.osha.gov/severeinjury
 - Streamlit
 - Plotly
 - Pandas
+
+## Purpose
+
+This dashboard demonstrates how operational risk signals in infrastructure environments can be visualized to support executive decision-making and strategic discussions around electrical safety operations.
