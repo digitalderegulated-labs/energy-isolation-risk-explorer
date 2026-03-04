@@ -7,7 +7,8 @@ import plotly.express as px
 # ---------------------------------------------------
 
 st.set_page_config(
-    page_title="Infrastructure Isolation Risk Intelligence",
+    page_title="Isolation Intelligence",
+    page_icon="⚡",
     layout="wide"
 )
 
@@ -26,22 +27,40 @@ h1 {
     font-weight:700;
 }
 
+.block-container {
+    padding-top:2rem;
+}
+
+.cta-box {
+    background:#ffffff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0px 3px 8px rgba(0,0,0,0.06);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------
-# SIDEBAR
+# HEADER
 # ---------------------------------------------------
 
-st.sidebar.title("Isolation Intelligence")
+st.title("⚡ Isolation Intelligence")
+st.caption("Operational Risk Visibility for Complex Electrical Infrastructure")
+
+# ---------------------------------------------------
+# SIDEBAR NAVIGATION
+# ---------------------------------------------------
+
+st.sidebar.title("Platform Navigation")
 
 page = st.sidebar.radio(
-    "Navigation",
+    "",
     [
         "Executive Overview",
-        "Industry Risk Landscape",
-        "Incident Locations",
-        "Incident Trends",
+        "Infrastructure Complexity",
+        "Operational Risk Exposure",
+        "Severe Incident Locations Across Infrastructure Environments",
         "Dataset Explorer"
     ]
 )
@@ -55,12 +74,9 @@ def load_data():
 
     df = pd.read_csv("osha_severe_injuries.csv", low_memory=False)
 
-    # normalize column names
     df.columns = df.columns.str.lower()
 
-    # convert date
     df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
-    df["year"] = df["eventdate"].dt.year
 
     return df
 
@@ -68,7 +84,7 @@ def load_data():
 df = load_data()
 
 # ---------------------------------------------------
-# TARGET NAICS SECTORS
+# NAICS FILTER
 # ---------------------------------------------------
 
 target_naics = [
@@ -85,7 +101,7 @@ df["primary naics"] = df["primary naics"].astype(str)
 df = df[df["primary naics"].isin(target_naics)]
 
 # ---------------------------------------------------
-# NAICS → ENVIRONMENT
+# NAICS → INFRASTRUCTURE TYPE
 # ---------------------------------------------------
 
 def map_environment(code):
@@ -111,43 +127,43 @@ df["environment"] = df["primary naics"].apply(map_environment)
 
 if page == "Executive Overview":
 
-    st.title("Operational Risk in Complex Electrical Infrastructure")
+    st.header("Infrastructure Complexity and Isolation Risk")
 
     st.markdown("""
-Electrical infrastructure environments such as power generation facilities, telecommunications networks, data centers, and commercial power systems rely on increasingly complex energy architectures.
+Modern infrastructure environments — including **data centers, telecommunications networks, power systems, and commercial electrical facilities** — rely on increasingly complex electrical architectures.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying that all energy sources have been properly isolated becomes operationally challenging.
+These environments frequently include:
 
-This dashboard highlights severe incident patterns across infrastructure sectors where electrical isolation complexity is highest.
+• multiple incoming utility feeds  
+• backup generators  
+• UPS systems  
+• layered distribution panels  
+• redundant electrical pathways  
+
+During maintenance operations, technicians must isolate **every active energy source** before work begins. As infrastructure complexity increases, verifying complete isolation becomes significantly more difficult.
+
+This dashboard explores where these complex environments exist and how severe incidents appear across them.
 """)
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Incident Records", len(df))
+    col1.metric("Severe Incident Records", len(df))
     col2.metric("Infrastructure Sectors", df["environment"].nunique())
-    col3.metric("States Represented", df["state"].nunique())
-
-    st.divider()
-
-    st.subheader("Executive Insight")
-
-    env_counts = df["environment"].value_counts()
-
-    highest_risk_sector = env_counts.idxmax()
-
-    st.info(
-        f"Severe incidents are most frequently reported in **{highest_risk_sector}** environments, "
-        "highlighting the operational complexity involved in maintaining electrical infrastructure "
-        "across power systems, telecommunications networks, data centers, and commercial facilities."
-    )
+    col3.metric("Organizations Represented", df["employer"].nunique())
 
 # ---------------------------------------------------
-# INDUSTRY RISK LANDSCAPE
+# INFRASTRUCTURE COMPLEXITY
 # ---------------------------------------------------
 
-if page == "Industry Risk Landscape":
+if page == "Infrastructure Complexity":
 
-    st.title("Incident Distribution by Infrastructure Environment")
+    st.header("Infrastructure Environments with Complex Electrical Systems")
+
+    st.markdown("""
+Certain infrastructure sectors operate **highly layered electrical architectures** where multiple energy sources must be managed simultaneously.
+
+These environments often include redundant power distribution designed for reliability — which increases the complexity of isolation procedures during maintenance operations.
+""")
 
     env_counts = df["environment"].value_counts().reset_index()
     env_counts.columns = ["Environment", "Incidents"]
@@ -168,14 +184,40 @@ if page == "Industry Risk Landscape":
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------
-# INCIDENT LOCATION MAP
+# OPERATIONAL RISK
 # ---------------------------------------------------
 
-if page == "Incident Locations":
+if page == "Operational Risk Exposure":
 
-    st.title("Severe Incident Locations Across Infrastructure Environments")
+    st.header("Operational Isolation Risk")
 
-    geo_df = df.dropna(subset=["latitude", "longitude"])
+    st.markdown("""
+In complex electrical environments, verifying that all energy sources have been isolated is a critical safety requirement.
+
+When isolation steps are missed or performed incorrectly, workers can be exposed to live energy sources during maintenance operations.
+
+The presence of redundant infrastructure systems — including backup generation, UPS systems, and multi-layered distribution — increases the number of possible energy paths that must be verified.
+""")
+
+    env_counts = df["environment"].value_counts()
+
+    highest = env_counts.idxmax()
+
+    st.info(
+        f"Severe incidents are most frequently reported in **{highest}** environments, "
+        "highlighting the operational complexity involved in managing electrical isolation procedures "
+        "across modern infrastructure systems."
+    )
+
+# ---------------------------------------------------
+# INCIDENT MAP
+# ---------------------------------------------------
+
+if page == "Severe Incident Locations Across Infrastructure Environments":
+
+    st.header("Severe Incident Locations Across Infrastructure Environments")
+
+    geo_df = df.dropna(subset=["latitude","longitude"])
 
     fig = px.scatter_mapbox(
         geo_df,
@@ -195,39 +237,41 @@ if page == "Incident Locations":
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------
-# INCIDENT TRENDS
+# CTA + SALES LEAD
 # ---------------------------------------------------
 
-if page == "Incident Trends":
+st.divider()
 
-    st.title("Incident Trends Over Time")
+st.markdown("""
+### Managing Isolation Risk in Complex Infrastructure
 
-    trend = df.groupby("year").size().reset_index(name="Incidents")
+Organizations operating complex electrical environments must ensure that all energy sources are verified as isolated before maintenance begins.
 
-    fig = px.line(
-        trend,
-        x="year",
-        y="Incidents",
-        markers=True
-    )
+Digital lockout/tagout platforms provide structured workflows that help technicians confirm isolation steps across complex infrastructure systems.
+""")
 
-    fig.update_layout(
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        xaxis_title="Year",
-        yaxis_title="Incident Count"
-    )
+with st.container():
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.markdown('<div class="cta-box">', unsafe_allow_html=True)
+
+    st.subheader("Request a Demonstration")
+
+    name = st.text_input("Name")
+    company = st.text_input("Company")
+    email = st.text_input("Email")
+
+    if st.button("Request Demo"):
+
+        st.success("Thank you. A product specialist will reach out to schedule a demonstration.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------
-# DATASET EXPLORER
+# DATASET
 # ---------------------------------------------------
 
 if page == "Dataset Explorer":
 
-    st.title("Dataset Explorer")
+    st.header("Dataset Explorer")
 
-    st.write("Total Records:", len(df))
-
-    st.dataframe(df.head(100))
+    st.dataframe(df.head(200))
