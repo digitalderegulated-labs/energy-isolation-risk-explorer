@@ -1,0 +1,166 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.set_page_config(
+    page_title="Energy Infrastructure Risk Overview",
+    layout="wide"
+)
+
+st.sidebar.title("Energy Infrastructure Risk Dashboard")
+
+page = st.sidebar.radio(
+    "Navigation",
+    [
+        "Executive Overview",
+        "Industry Risk Landscape",
+        "Geographic Distribution",
+        "Incident Trends",
+        "Dataset Summary"
+    ]
+)
+
+# -----------------------------
+# LOAD DATA
+# -----------------------------
+
+@st.cache_data
+def load_data():
+
+    df = pd.read_csv("osha_severe_injuries.csv", low_memory=False)
+    df.columns = df.columns.str.lower()
+
+    if "eventdate" in df.columns:
+        df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
+        df["year"] = df["eventdate"].dt.year
+
+    return df
+
+
+df = load_data()
+
+# -----------------------------
+# NAICS ENVIRONMENT MAPPING
+# -----------------------------
+
+def map_environment(naics):
+
+    naics = str(naics)
+
+    if naics == "221121":
+        return "Electric Power Generation"
+
+    if naics == "221122":
+        return "Electric Power Distribution"
+
+    if naics == "238210":
+        return "Electrical Contractors"
+
+    if naics == "517311":
+        return "Telecommunications Infrastructure"
+
+    if naics == "518210":
+        return "Data Centers"
+
+    if naics == "236220":
+        return "Commercial Infrastructure Construction"
+
+    return "Other"
+
+
+df["environment"] = df["primary naics"].astype(str).apply(map_environment)
+
+# -----------------------------
+# EXECUTIVE OVERVIEW
+# -----------------------------
+
+if page == "Executive Overview":
+
+    st.title("Operational Risk in Complex Electrical Infrastructure")
+
+    st.markdown("""
+Modern electrical infrastructure — including power generation facilities, telecommunications networks, data centers, and commercial power systems — relies on complex and often redundant energy architectures.
+
+During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, so does the operational risk associated with verifying that all energy sources have been properly isolated.
+
+This dashboard provides a high-level view of severe incident patterns across key infrastructure sectors in the United States.
+""")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Total Incident Records", len(df))
+    col2.metric("Infrastructure Environments", df["environment"].nunique())
+    col3.metric("States Represented", df["state"].nunique())
+
+# -----------------------------
+# INDUSTRY RISK LANDSCAPE
+# -----------------------------
+
+if page == "Industry Risk Landscape":
+
+    st.title("Incident Distribution by Infrastructure Environment")
+
+    env_counts = df["environment"].value_counts().reset_index()
+    env_counts.columns = ["Environment", "Incidents"]
+
+    fig = px.bar(
+        env_counts,
+        x="Environment",
+        y="Incidents",
+        color="Environment"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# -----------------------------
+# GEOGRAPHIC DISTRIBUTION
+# -----------------------------
+
+if page == "Geographic Distribution":
+
+    st.title("Geographic Distribution of Severe Incidents")
+
+    state_counts = df.groupby("state").size().reset_index(name="Incidents")
+
+    fig_map = px.choropleth(
+        state_counts,
+        locations="state",
+        locationmode="USA-states",
+        color="Incidents",
+        scope="usa"
+    )
+
+    st.plotly_chart(fig_map, use_container_width=True)
+
+# -----------------------------
+# INCIDENT TRENDS
+# -----------------------------
+
+if page == "Incident Trends":
+
+    st.title("Incident Trends Over Time")
+
+    if "year" in df.columns:
+
+        trend = df.groupby("year").size().reset_index(name="Incidents")
+
+        fig = px.line(
+            trend,
+            x="year",
+            y="Incidents",
+            markers=True
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+# -----------------------------
+# DATASET SUMMARY
+# -----------------------------
+
+if page == "Dataset Summary":
+
+    st.title("Dataset Overview")
+
+    st.write("Total Records:", len(df))
+
+    st.dataframe(df.head(100))
