@@ -13,25 +13,25 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------
-# ENTERPRISE STYLE
+# STYLE
 # ---------------------------------------------------
 
 st.markdown("""
 <style>
 
 .main {
-    background-color:#F5F7FA;
+    background-color:#F6F8FB;
 }
 
-h1 {
+h1, h2, h3 {
     font-weight:700;
 }
 
-.section-box {
+.metric-box {
     background:white;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0px 2px 8px rgba(0,0,0,0.05);
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0px 2px 6px rgba(0,0,0,0.05);
 }
 
 </style>
@@ -42,7 +42,7 @@ h1 {
 # ---------------------------------------------------
 
 st.title("⚡ Isolation Intelligence")
-st.caption("Infrastructure Complexity and Operational Isolation Risk")
+st.caption("Operational Risk Visibility for Complex Electrical Infrastructure")
 
 # ---------------------------------------------------
 # NAVIGATION
@@ -53,7 +53,8 @@ tabs = st.tabs([
     "Infrastructure Complexity",
     "Operational Isolation Risk",
     "Severe Incident Locations Across Infrastructure Environments",
-    "Sales Opportunity Signals"
+    "Market Opportunity Signals",
+    "Strategic Insights"
 ])
 
 # ---------------------------------------------------
@@ -70,7 +71,6 @@ def load_data():
     df["eventdate"] = pd.to_datetime(df["eventdate"], errors="coerce")
 
     return df
-
 
 df = load_data()
 
@@ -91,7 +91,7 @@ df["primary naics"] = df["primary naics"].astype(str)
 df = df[df["primary naics"].isin(target_naics)]
 
 # ---------------------------------------------------
-# NAICS → ENVIRONMENT
+# MAP ENVIRONMENT
 # ---------------------------------------------------
 
 def map_environment(code):
@@ -107,7 +107,6 @@ def map_environment(code):
     }
 
     return mapping.get(code, "Other")
-
 
 df["environment"] = df["primary naics"].apply(map_environment)
 
@@ -126,9 +125,11 @@ with tabs[0]:
     col3.metric("Organizations Represented", df["employer"].nunique())
 
     st.markdown("""
-Modern infrastructure environments — including **data centers, telecommunications networks, power systems, and commercial facilities** — rely on complex electrical architectures that include redundant power feeds, backup generation, and layered distribution systems.
+Modern infrastructure environments — including **data centers, telecommunications networks, power systems, and commercial facilities** — rely on increasingly complex electrical architectures.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying complete energy isolation becomes significantly more difficult.
+These environments frequently include redundant power feeds, backup generation, UPS systems, and layered electrical distribution networks.
+
+During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying complete isolation becomes significantly more challenging.
 """)
 
 # ---------------------------------------------------
@@ -165,18 +166,27 @@ with tabs[2]:
 
     st.header("Operational Isolation Risk")
 
-    env_counts = df["environment"].value_counts()
+    risk_data = df["environment"].value_counts()
 
-    highest = env_counts.idxmax()
+    st.markdown("""
+Severe incidents often occur in environments where electrical systems contain multiple active energy paths.
 
-    st.info(
-        f"The highest concentration of severe incidents occurs in **{highest}** environments. "
-        "These environments typically operate layered electrical infrastructure that includes "
-        "backup generation, UPS systems, and redundant distribution paths."
+These environments frequently include:
+- redundant electrical feeds
+- backup generation
+- UPS systems
+- multi-layered distribution systems
+""")
+
+    fig = px.pie(
+        names=risk_data.index,
+        values=risk_data.values
     )
 
+    st.plotly_chart(fig, use_container_width=True)
+
 # ---------------------------------------------------
-# INCIDENT MAP (UNCHANGED)
+# INCIDENT MAP
 # ---------------------------------------------------
 
 with tabs[3]:
@@ -203,27 +213,52 @@ with tabs[3]:
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------
-# SALES OPPORTUNITY SIGNALS
+# MARKET OPPORTUNITY SIGNALS
 # ---------------------------------------------------
 
 with tabs[4]:
 
-    st.header("Organizations Operating Complex Infrastructure Environments")
-
-    st.markdown("""
-The organizations below operate infrastructure environments where electrical isolation procedures must be managed carefully during maintenance operations.
-
-These environments often contain layered electrical systems including backup generation, UPS infrastructure, and redundant distribution paths.
-""")
+    st.header("Organizations Operating Complex Electrical Infrastructure")
 
     lead_df = df[["employer","environment","city","state"]]
     lead_df = lead_df.drop_duplicates()
 
     st.dataframe(lead_df.head(100))
 
-    st.subheader("Organizations with Highest Incident Exposure")
+    st.subheader("Top Organizations by Incident Exposure")
 
     top_companies = df["employer"].value_counts().reset_index()
     top_companies.columns = ["Organization","Incident Records"]
 
     st.dataframe(top_companies.head(20))
+
+# ---------------------------------------------------
+# STRATEGIC INSIGHTS
+# ---------------------------------------------------
+
+with tabs[5]:
+
+    st.header("Strategic Observations")
+
+    st.markdown("""
+### Infrastructure Complexity Drives Isolation Risk
+
+Across modern infrastructure sectors, electrical systems are increasingly designed with redundancy and distributed energy paths.
+
+This improves reliability but increases the operational complexity of verifying energy isolation during maintenance procedures.
+
+### Environments with Highest Operational Complexity
+
+The data indicates higher concentrations of severe incidents across sectors operating complex electrical infrastructure such as:
+
+• data centers  
+• telecommunications infrastructure  
+• electric power systems  
+• commercial construction projects  
+
+### Implication
+
+Organizations operating these environments must ensure technicians can confidently verify that all energy sources are isolated before maintenance work begins.
+
+Digital lockout/tagout platforms can support these workflows by guiding technicians through structured isolation verification procedures.
+""")
