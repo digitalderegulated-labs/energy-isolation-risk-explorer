@@ -10,52 +10,45 @@ These dashboards include short "Insights" sections that explain what the data me
 Note: These insights are examples of how an analyst might interpret the data. They are included for educational
 and demonstration purposes and should not be considered formal operational guidance.
 
-# Isolation Intelligence
+# Infrastructure Isolation Risk Explorer
 
-A prototype dashboard exploring operational risk in complex electrical infrastructure environments.
+Live App:
+https://digitalderegulated-labs-energy-isolation-risk-explorer.streamlit.app
 
 ## Overview
 
-Modern infrastructure environments — including data centers, telecommunications networks, power systems, and commercial facilities — rely on layered electrical architectures that include redundant power feeds, backup generation, and distributed energy systems.
+Infrastructure environments rely on electrical isolation procedures to protect workers
+and prevent severe incidents.
 
-During maintenance operations, technicians must isolate every active energy source before work begins. As infrastructure complexity increases, verifying complete isolation becomes more difficult.
+This dashboard visualizes patterns across isolation failures, severe incidents,
+and infrastructure environments.
 
-This dashboard explores how severe incident data can help visualize where operational complexity may contribute to safety risk.
+The goal is to translate safety data into a format that operational teams and
+executives can quickly understand.
 
-## Concept
+## Key Features
 
-The purpose of this prototype is not to replicate internal safety analytics.
+Infrastructure environment classification
 
-Instead, it demonstrates how publicly available incident data can be used to visualize:
+Severe incident location mapping
 
-- infrastructure environments with complex electrical systems
-- geographic distribution of severe incidents
-- organizations operating in these environments
+Isolation risk indicators
 
-The concept illustrates how operational complexity can translate into isolation risk during maintenance operations.
+Trend monitoring across operational environments
 
-## Infrastructure Sectors Included
+## Example Insights
 
-The analysis focuses on sectors commonly associated with complex electrical infrastructure:
+Signal  
+Certain infrastructure environments show higher clustering of severe incidents.
 
-- Electric Power Generation
-- Electric Power Distribution
-- Electrical Contractors
-- Telecommunications Infrastructure
-- Data Centers
-- Commercial Infrastructure Construction
+Implication  
+Operational complexity or procedural gaps may increase isolation risk in these areas.
 
-## Data Source
-
-OSHA Severe Injury Reports
-
-## Technology
-
-- Python
-- Streamlit
-- Plotly
-- Pandas
+Next Step  
+Operations teams may review lockout/tagout procedures or training coverage
+for high-risk environments.
 
 ## Purpose
 
-This dashboard demonstrates how operational risk signals in infrastructure environments can be visualized to support executive decision-making and strategic discussions around electrical safety operations.
+This project demonstrates how safety data can be transformed into decision-friendly
+visual dashboards for infrastructure operators.
